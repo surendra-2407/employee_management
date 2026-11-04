@@ -60,3 +60,6 @@ Thumbs.db
 tmp/
 temp/
 scratch/
+
+# Local Study and Review files
+*.review
