@@ -108,4 +108,42 @@ export const api = {
     }
     return data;
   },
+
+  // Auth: Login via MongoDB verification
+  async login(credentials) {
+    const res = await fetch(`${BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || 'Authentication failed');
+    }
+    return data;
+  },
+
+  // Auth: Register in MongoDB
+  async register(userData) {
+    const res = await fetch(`${BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userData),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || 'Registration failed');
+    }
+    return data;
+  },
+
+  // Auth: Fetch users from MongoDB
+  async getUsers() {
+    const res = await fetch(`${BASE_URL}/auth/users`);
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || 'Failed to fetch users');
+    }
+    return data;
+  },
 };

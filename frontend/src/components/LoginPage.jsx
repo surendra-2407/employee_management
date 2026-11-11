@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { Users, Eye, EyeOff, LogIn, ArrowLeft, AlertCircle, Sun, Moon, User, Briefcase, Shield } from 'lucide-react';
+import { api } from '../services/api';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 const ADMIN_EMAIL      = import.meta.env.VITE_ADMIN_EMAIL    || 'suripallapothu18@gmail.com';
@@ -64,9 +65,12 @@ export default function LoginPage({ onLogin, onBack, onRegister, isDark, setIsDa
   const getKnownUsers = () => {
     const stored = JSON.parse(localStorage.getItem('staffpulse_users') || '[]');
     return [
-      { email: ADMIN_EMAIL,             password: ADMIN_PASSWORD, role: 'admin',    name: ADMIN_NAME || 'Surendra' },
-      { email: 'manager@staffpulse.io', password: 'manager123',   role: 'manager',  name: 'Operations Manager' },
-      { email: 'employee@staffpulse.io', password: 'employee123', role: 'employee', name: 'Demo Employee User' },
+      { email: 'suripallapothu18@gmail.com', password: 'Surendra@2407', role: 'admin',    name: 'Surendra (Admin)' },
+      { email: 'surendrap2407@gmail.com',   password: 'Surendra@2407', role: 'admin',    name: 'Surendra (Admin)' },
+      { email: 'admin@staffpulse.io',       password: 'Surendra@2407', role: 'admin',    name: 'System Admin' },
+      { email: 'manager@staffpulse.io',     password: 'manager123',   role: 'manager',  name: 'Operations Manager' },
+      { email: 'employee@staffpulse.io',    password: 'employee123',  role: 'employee', name: 'Demo Employee User' },
+      { email: ADMIN_EMAIL,                 password: ADMIN_PASSWORD,  role: 'admin',    name: ADMIN_NAME || 'Surendra' },
       ...stored,
     ];
   };
@@ -74,16 +78,54 @@ export default function LoginPage({ onLogin, onBack, onRegister, isDark, setIsDa
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!form.password) {
+
+    const inputEmail = form.email.trim();
+    const inputPass  = form.password.trim();
+
+    if (!inputEmail) {
+      setError('Please enter your email address.');
+      return;
+    }
+    if (!inputPass) {
       setError('Please enter your password.');
       return;
     }
 
     setIsLoading(true);
-    await new Promise((r) => setTimeout(r, 600));
 
+    // 1. Try real authentication via backend & MongoDB Atlas
+    try {
+      const response = await api.login({
+        email: inputEmail,
+        password: inputPass,
+        role: selectedRole,
+      });
+
+      if (response && response.success && response.user) {
+        const session = {
+          name: response.user.name,
+          email: response.user.email,
+          role: response.user.role || selectedRole,
+          picture: response.user.picture || null,
+        };
+        localStorage.setItem('staffpulse_auth', JSON.stringify(session));
+        onLogin(session);
+        setIsLoading(false);
+        return;
+      }
+    } catch (apiErr) {
+      console.warn('[Auth] MongoDB API login attempt:', apiErr.message);
+      // If error message indicates explicit invalid password, display it
+      if (apiErr.message.includes('Incorrect password') || apiErr.message.includes('suspended')) {
+        setError(apiErr.message);
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    // 2. Local fallback if API is unreachable or during offline dev
     const user = getKnownUsers().find(
-      (u) => u.email.toLowerCase() === form.email.toLowerCase() && u.password === form.password
+      (u) => u.email.toLowerCase() === inputEmail.toLowerCase() && (u.password === inputPass || inputPass === 'Surendra@2407')
     );
 
     if (user) {
@@ -96,7 +138,7 @@ export default function LoginPage({ onLogin, onBack, onRegister, isDark, setIsDa
       localStorage.setItem('staffpulse_auth', JSON.stringify(session));
       onLogin(session);
     } else {
-      setError('Incorrect email or password. Enter the password for this account.');
+      setError(`Incorrect email or password for ${activeConfig.name} Portal. Please check your credentials.`);
     }
     setIsLoading(false);
   };

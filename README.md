@@ -252,5 +252,38 @@ npm run dev
 
 ---
 
+## ☸️ Kubernetes Deployment (Production Orchestration)
+
+The project includes production-ready Kubernetes manifests in the `k8s/` directory for deploying to **AWS EKS** or local clusters (**Docker Desktop Kubernetes** / **Minikube**).
+
+### 📁 Kubernetes Architecture & Manifests
+
+- `k8s/namespace.yaml` — Isolated namespace `staffpulse-app`
+- `k8s/configmap.yaml` — ConfigMap for non-sensitive application settings
+- `k8s/secret.yaml` — Secure Secret for MongoDB Atlas URI and admin credentials
+- `k8s/backend-deployment.yaml` — 2 replicas of Node.js backend with rolling updates, liveness & readiness health probes
+- `k8s/backend-service.yaml` — ClusterIP internal service on port 5000 (`backend:5000`)
+- `k8s/frontend-deployment.yaml` — 2 replicas of Nginx React frontend with resource limits
+- `k8s/frontend-service.yaml` — NodePort service exposing the application on port `30080` (or `80`)
+- `k8s/hpa.yaml` — Horizontal Pod Autoscaler (scales 2 to 5 pods based on CPU utilization)
+- `k8s/ingress.yaml` — Ingress routing `/` to frontend and `/api` to backend
+- `k8s/kustomization.yaml` — Declarative orchestration file for 1-click deployment
+
+### 🚀 Deploy to Kubernetes (1-Click)
+
+```bash
+# 1. Apply all manifests to Kubernetes
+kubectl apply -k ./k8s
+
+# 2. Check running pods, services, and HPA
+kubectl get all -n staffpulse-app
+
+# 3. Access application via port-forward
+kubectl port-forward svc/frontend-service 3000:80 -n staffpulse-app
+# Visit http://localhost:3000
+```
+
+---
+
 ## 📄 License
 MIT License. Created for prototype demonstration.

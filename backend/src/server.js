@@ -5,6 +5,8 @@ const morgan = require('morgan');
 const mongoose = require('mongoose');
 const connectDB = require('./config/db');
 const employeeRoutes = require('./routes/employeeRoutes');
+const authRoutes = require('./routes/authRoutes');
+const { seedInitialUsers } = require('./controllers/authController');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -32,6 +34,7 @@ app.get('/api/health', (req, res) => {
 
 // API Routes
 app.use('/api/employees', employeeRoutes);
+app.use('/api/auth', authRoutes);
 
 // Root route
 app.get('/', (req, res) => {
@@ -68,6 +71,7 @@ app.use((err, req, res, next) => {
 const startServer = async () => {
   try {
     await connectDB();
+    await seedInitialUsers();
     const server = app.listen(PORT, () => {
       console.log(`===============================================`);
       console.log(`🚀 Employee API Server running on port ${PORT}`);
