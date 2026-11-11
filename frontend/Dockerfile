@@ -1,7 +1,7 @@
 # ==========================================
 # Stage 1: Build the React Application
 # ==========================================
-FROM node:20-alpine AS build
+FROM node:20-slim AS build
 
 WORKDIR /usr/src/app
 
@@ -16,7 +16,7 @@ COPY . .
 RUN npm run build
 
 # ==========================================
-# Stage 2: Serve with Nginx Alpine
+# Stage 2: Serve with Nginx
 # ==========================================
 FROM nginx:alpine
 
