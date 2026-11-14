@@ -74,4 +74,4 @@ jobs:
           version: 'latest'
 
       - name: Validate Kubernetes Manifests with Kustomize
-        run: kubectl kustomize ./k8s/ --dry-run=client
+        run: kubectl kustomize ./k8s/
